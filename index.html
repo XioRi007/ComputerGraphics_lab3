@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+    <head> 
+         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+         <title>Приклад 03.03  - Помічник AxesHelper </title>
+	     <script src="./js/three.min.js"></script>
+	 	 <script src="./js/OrbitControls.js"></script>
+		  <script src="./js/dat.gui.js"></script>
+		
+		
+		
+	</head>
+	<body>
+        
+		<script>
+
+		
+		init();
+	
+			function init()
+			{
+				
+				// створюємо рендер і задаємо розмір
+				var renderer = window.WebGLRenderingContext ? new THREE.WebGLRenderer({antialias:true}) : new THREE.CanvasRenderer();
+				renderer.setClearColor(new THREE.Color(0xEEEEEE));
+                renderer.setSize( window.innerWidth, window.innerHeight );
+				
+				renderer.shadowMapSoft = true;
+				renderer.shadowMap.enabled = true;
+				renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
+				
+				// додаємо вивід візуалізатора до html-елементу
+				document.body.appendChild( renderer.domElement );
+				   
+				// створюємо сцену, яка буде містити всі наші елементи, такі як об'єкти, камери і джерела світла
+				var scene = new THREE.Scene();
+				
+				// створюємо камеру
+				var camera = new THREE.PerspectiveCamera(45,window.innerWidth / window.innerHeight, 1,10000);
+				
+				
+				camera.position.set(-1200, 600, 1600);
+				camera.lookAt(new THREE.Vector3(0,0,0));
+						
+				var controls = new THREE.OrbitControls(camera, renderer.domElement);
+				controls.target = new THREE.Vector3(0, 0, 0);
+				
+				
+				
+				// підготувати годинник
+				var clock = new THREE.Clock();
+				
+				
+
+				
+		
+				// додати площину
+				var plane_Geometry = new THREE.PlaneGeometry(1200, 1200, 1, 1);
+				plane = new THREE.Mesh(plane_Geometry, new THREE.MeshLambertMaterial({color: 0x9669FE}));
+				plane.position.y = -20;
+				plane.rotation.x = - Math.PI / 2;
+				plane.receiveShadow = true;
+				scene.add(plane);
+				
+				// створити new group (Object3D)
+				var group = new THREE.Object3D();
+
+				mats = [ 
+					new THREE.MeshPhongMaterial({color:0xffffff, transparent:true, map: new THREE.TextureLoader().load('./images/1.jpg' )}),
+					new THREE.MeshPhongMaterial({color:0xffffff, transparent:true}),
+					new THREE.MeshPhongMaterial({color:0xffffff, transparent:true, map: new THREE.TextureLoader().load('./images/2.jpg' )}),
+				];
+				const cone = makeCone(-100, 75, 0, mats);
+				group.add(cone);
+				scene.add(group);
+		
+								
+				
+				//интерфейс
+				const gui_controls = new function() {
+					this.ArrowHelper = false;
+					this.AxisHelper = false;
+					this.BoxHelper = false;
+					this.CameraHelper = false;
+					this.DirectionalLightHelper = false;
+					this.GridHelper = false;
+					this.HemisphereLightHelper = false;
+					this.PointLightHelper = false;
+					this.SpotLightHelper = false;
+                };	
+
+				const gui = new dat.GUI();
+				gui.add(gui_controls, 'ArrowHelper').onChange(function (value) {
+					if(value){
+						var directionV3 = new THREE.Vector3(1, 0, 1);
+						var originV3 = new THREE.Vector3(0, 200, 0);
+						var arrowHelper = new THREE.ArrowHelper(directionV3, originV3, 100, 0xff0000, 20, 10); // 100 is length, 20 and 10 are head length and width
+						arrowHelper.name="ArrowHelper";
+						scene.add(arrowHelper);
+						
+					}else{
+						scene.remove(scene.getObjectByName("ArrowHelper"));
+					}
+				}); 				
+				gui.add(gui_controls, 'AxisHelper').onChange(function (value) {
+					if(value){
+						var axisHelper = new THREE.AxesHelper(800); 
+						axisHelper.name="AxisHelper";
+						scene.add(axisHelper);
+						
+					}else{
+						scene.remove(scene.getObjectByName("AxisHelper"));
+					}
+				}); 					
+				gui.add(gui_controls, 'BoxHelper').onChange(function (value) {
+					if(value){
+						boxHelper = new THREE.BoxHelper( group, 0x999999 );
+						boxHelper.name="BoxHelper";
+						scene.add(boxHelper);
+						
+					}else{
+						scene.remove(scene.getObjectByName("BoxHelper"));
+					}
+				}); 				
+				gui.add(gui_controls, 'CameraHelper').onChange(function (value) {
+					if(value){
+						var perspectiveCamera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 0.01, 1500);
+						var cameraHelper = new THREE.CameraHelper(perspectiveCamera);
+						cameraHelper.name="CameraHelper";
+						scene.add(cameraHelper);
+					}else{
+						scene.remove(scene.getObjectByName("CameraHelper"));
+					}
+				});				
+				gui.add(gui_controls, 'GridHelper').onChange(function (value) {
+					if(value){
+						var gridHelper = new THREE.GridHelper(500, 40); // 
+						gridHelper.position = new THREE.Vector3(0, 0, 0);
+						gridHelper.rotation = new THREE.Euler(0, 0, 0);
+						gridHelper.name="GridHelper";
+						scene.add(gridHelper);						
+					}else{
+						scene.remove(scene.getObjectByName("GridHelper"));
+					}
+				}); 		
+				gui.add(gui_controls, 'DirectionalLightHelper').onChange(function (value) {
+					if(value){
+						// додати directional light
+						dLight = new THREE.DirectionalLight(0xffffff,1);
+						dLight.position.set(0, 400, 0);
+						dLight.castShadow = true;
+						dLight.name = "dLight";
+						dLight.shadow.mapSize.height = dLight.shadow.mapSize.width = 1000;
+							
+						var d = 500;
+
+						dLight.shadow.camera.left = - d;
+						dLight.shadow.camera.right = d;
+						dLight.shadow.camera.top = d;
+						dLight.shadow.camera.bottom = - d;
+
+						dLight.shadow.camera.far = 1000;
+						dLight.shadow.bias = - 0.0001;
+									
+						scene.add(dLight);
+
+						dlightHelper = new THREE.DirectionalLightHelper(dLight, 50); // 50 is helper size
+						dlightHelper.name="DirectionalLightHelper";
+						scene.add(dlightHelper);
+					}else{
+						scene.remove(scene.getObjectByName("dLight"));
+						scene.remove(scene.getObjectByName("DirectionalLightHelper"));
+					}
+				}); 			
+				gui.add(gui_controls, 'HemisphereLightHelper').onChange(function (value) {
+					if(value){
+						// hemisphere light Джерело світла, розташоване прямо над сценою
+						hemiLight = new THREE.HemisphereLight(0x0000ff, 0x00ff00, 0.4); 
+						hemiLight.color.setHSL(0.6, 1, 0.6);
+						hemiLight.groundColor.setHSL(0.095, 1, 0.75);
+						hemiLight.position.set(-200, 400, -200);
+						hemiLight.name="hemiLight";
+						scene.add(hemiLight);
+
+						var hlightHelper = new THREE.HemisphereLightHelper(hemiLight, 50, 300); // 50 is sphere size, 300 is arrow length
+						hlightHelper.name="HemisphereLightHelper";
+						scene.add(hlightHelper);
+					}else{
+						scene.remove(scene.getObjectByName("hemiLight"));
+						scene.remove(scene.getObjectByName("HemisphereLightHelper"));					}
+				}); 				
+				gui.add(gui_controls, 'PointLightHelper').onChange(function (value) {
+					if(value){
+						 // point light - Світло, що випромінюється з однієї точки 
+						// в усіх напрямках. Зазвичай це використовується для імітації 
+						// світла, випромінюваного лампочкою.
+						var pointLight = new THREE.PointLight(0xffff00, 1.0);
+						pointLight.position.set(300,300,300);
+						pointLight.castShadow = true;
+						pointLight.shadowMapWidth = pointLight.shadowMapHeight = 1000;
+						
+						var d = 500;
+
+						pointLight.shadow.camera.left = - d;
+						pointLight.shadow.camera.right = d;
+						pointLight.shadow.camera.top = d;
+						pointLight.shadow.camera.bottom = - d;
+
+						pointLight.shadow.camera.far = 1000;
+						pointLight.shadow.bias = - 0.0001;
+						pointLight.name = "pointLight";
+						scene.add(pointLight);
+
+						var pointLightHelper = new THREE.PointLightHelper(pointLight, 50); // 50 is sphere size
+						pointLightHelper.name = "PointLightHelper";
+						scene.add(pointLightHelper);
+						
+					}else{
+						scene.remove(scene.getObjectByName("pointLight"));
+						scene.remove(scene.getObjectByName("PointLightHelper"));
+					}
+				}); 				
+				gui.add(gui_controls, 'SpotLightHelper').onChange(function (value) {
+					if(value){
+						// spot light - світло випромінюється з однієї точки в одному напрямку, 
+						// вздовж конуса, розмір якого збільшується в міру віддалення від джерела світла.
+						var spotLight = new THREE.SpotLight(0xffffff);
+						spotLight.position.set(-300,400,300);
+						spotLight.castShadow = true;
+						spotLight.shadowMapWidth =spotLight.shadowMapHeight = 1000;
+						
+						var d = 500;
+
+						spotLight.shadow.camera.left = - d;
+						spotLight.shadow.camera.right = d;
+						spotLight.shadow.camera.top = d;
+						spotLight.shadow.camera.bottom = - d;
+
+						spotLight.shadow.camera.far = 1000;
+						spotLight.shadow.bias = - 0.0001;
+
+						spotLight.name = "spotLight";
+						scene.add(spotLight);
+
+						var spotLightHelper = new THREE.SpotLightHelper(spotLight, 50); // 50 is sphere size
+						spotLightHelper.name = "SpotLightHelper";
+						scene.add(spotLightHelper);
+						
+					}else{
+						scene.remove(scene.getObjectByName("spotLight"));
+						scene.remove(scene.getObjectByName("SpotLightHelper"));
+					}
+				}); 		
+
+
+				renderScene();
+
+			function renderScene(){
+	
+			requestAnimationFrame( renderScene );
+			controls.update(clock.getDelta());
+			if(gui_controls.DirectionalLightHelper){
+				dlightHelper.update();		
+				// smoothly move the dLight
+				var timer = Date.now() * 0.000025;
+				dLight.position.x = Math.sin(timer * 5) * 300;
+				dLight.position.z = Math.cos(timer * 5) * 300;		
+			}
+			
+			
+			renderer.render( scene, camera );
+			}	
+		
+		
+};
+			function makeCone(x, y, z, material){
+				const geometry = new THREE.ConeGeometry( 100, 200, 4 );
+				const cone = new THREE.Mesh( geometry, material );
+
+				cone.position.x = x;
+				cone.position.y = y;
+				cone.position.z = z;
+				cone.castShadow = cone.receiveShadow = true;
+			
+				return cone;
+			}
+
+
+		</script>
+	</body>
+</html>
