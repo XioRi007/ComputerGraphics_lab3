@@ -147,7 +147,7 @@
 					if(value){
 						// додати directional light
 						dLight = new THREE.DirectionalLight(0xffffff,1);
-						dLight.position.set(0, 400, 0);
+						dLight.position.set(0, 300, 0);
 						dLight.castShadow = true;
 						dLight.name = "dLight";
 						dLight.shadow.mapSize.height = dLight.shadow.mapSize.width = 1000;
@@ -261,7 +261,6 @@
 			controls.update(clock.getDelta());
 			if(gui_controls.DirectionalLightHelper){
 				dlightHelper.update();		
-				// smoothly move the dLight
 				var timer = Date.now() * 0.000025;
 				dLight.position.x = Math.sin(timer * 5) * 300;
 				dLight.position.z = Math.cos(timer * 5) * 300;		
@@ -274,7 +273,7 @@
 		
 };
 			function makeCone(x, y, z, material){
-				const geometry = new THREE.ConeGeometry( 100, 200, 4 );
+				const geometry = new THREE.ConeGeometry( 200, 400, 4 );
 				const cone = new THREE.Mesh( geometry, material );
 
 				cone.position.x = x;
