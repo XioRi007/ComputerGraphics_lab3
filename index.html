@@ -70,7 +70,7 @@
 					new THREE.MeshPhongMaterial({color:0xffffff, transparent:true}),
 					new THREE.MeshPhongMaterial({color:0xffffff, transparent:true, map: new THREE.TextureLoader().load('./images/2.jpg' )}),
 				];
-				const cone = makeCone(-100, 75, 0, mats);
+				const cone = makeCone(-100, 180, 0, mats);
 				group.add(cone);
 				scene.add(group);
 		
@@ -135,7 +135,10 @@
 				gui.add(gui_controls, 'GridHelper').onChange(function (value) {
 					if(value){
 						var gridHelper = new THREE.GridHelper(500, 40); // 
-						gridHelper.position = new THREE.Vector3(0, 0, 0);
+						gridHelper.position.x = -95;
+						gridHelper.position.y = -20;
+						gridHelper.position.z = 0;
+
 						gridHelper.rotation = new THREE.Euler(0, 0, 0);
 						gridHelper.name="GridHelper";
 						scene.add(gridHelper);						
